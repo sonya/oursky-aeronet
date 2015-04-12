@@ -1,5 +1,7 @@
 #!/usr/bin/python
 
+import os
+
 import pkg_resources
 pkg_resources.require("matplotlib")
 
@@ -11,14 +13,17 @@ sitename = "Billerica"
 
 def image_from_data(date_str, data):
     (day, month, year) = date_str.split(":")
-    filename = "output/" + sitename + "-" + year + "-" + month + "-" + day + ".png"
+
+    if not os.path.exists('output'):
+        os.mkdir('output')
+
+    filebasename = sitename + "-" + year + "-" + month + "-" + day + ".png"
+    filename = os.path.join("output", filebasename)
 
     (times, measurements) = zip(*data)
 
     # theming from https://ryanmlayer.wordpress.com/2014/02/18/matplotlib-black-background/
-#    matplotlib.rcParams.update({'font.size': 12})
     fig = matplotlib.pyplot.figure(figsize=(6,4),dpi=100,facecolor='black')
-#    fig.subplots_adjust(wspace=.05,left=.01,bottom=.01)
     ax = fig.add_subplot(1,1,1,axisbg='k')
 
     ax.spines['top'].set_visible(False)
@@ -43,14 +48,9 @@ def image_from_data(date_str, data):
     ax.set_title("Aerosol levels on " + year + "-" + month + "-" + day)
 
     plt.plot(times, measurements, color='white')
-#    plt.savefig(filename, figsize=(6, 4), dpi=100, facecolor="black")
     plt.savefig(filename, bbox_inches='tight', facecolor=fig.get_facecolor(), transparent=True)
 
-    plt.clf()
-
-    print date_str, times, measurements
-
-
+    plt.clf() # clear figure so we don't plot over the previous
 
 def parse_time(time_str):
     (hours, minutes, seconds) = time_str.split(":")
@@ -87,6 +87,4 @@ with open(datafile, "r") as fh:
                 current_date = date_str
 
             current_data.append((current_time, aot_500))
-
-#            print date_str, current_time, aot_500
 
